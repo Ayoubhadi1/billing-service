@@ -13,6 +13,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.hateoas.PagedModel;
 
 import java.util.Date;
@@ -30,12 +31,15 @@ public class BillingServiceApplication {
     CommandLineRunner start(BillRepository billRepository  ,
                             ProductItemRepository productItemRepository ,
                             CustomerRestClient customerRestClient,
-                            ProductItemRestClient productItemRestClient){
+                            ProductItemRestClient productItemRestClient,
+                            RepositoryRestConfiguration repositoryRestConfiguration){
+
+        repositoryRestConfiguration.exposeIdsFor(Bill.class);
         return args -> {
 
             Customer customer = customerRestClient.getCustomerById(1L);     //le id est null car en 1er lieu le id n'est pas récupéré dans /CUSTOMER-SERVICE (spring data rest) l faut l'activer dans customer service
             Bill bill1 = billRepository.save(new Bill(null , new Date() , null , customer.getId() , null));
-            PagedModel<Product>  productPagedModel = productItemRestClient.pageProducts(1 , 2); //seulement le 3eme 
+            PagedModel<Product>  productPagedModel = productItemRestClient.pageProducts(0 , 3); //seulement le 3eme
             productPagedModel.forEach(
                     product -> {
                         ProductItem productItem = new ProductItem();
